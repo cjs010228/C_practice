@@ -3,8 +3,10 @@
 
 int main()
 {
-	mem_set(my_name, 42, strlen(my_name));
-    name_print(my_name);
+	int num = 0x4D;
+	mem_set(&num, 42, sizeof(num));
+	printf("num = %d\n length = %lu\n",num,sizeof(num));
+    //name_print(my_name);
     return 0;
 }
 
