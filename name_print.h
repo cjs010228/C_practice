@@ -1,5 +1,5 @@
 #include <stdio.h>
-char my_name[10]="Van";
+char my_name[]="Brandon, you are good";
 void name_print(char*);
  
 
