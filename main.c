@@ -1,22 +1,30 @@
 #include <stdio.h>
 #include <stdbool.h>//It is essential to use the bool variable.
+#include <string.h>
+#include <stdlib.h>
+
+void Dup_str_func(char[], char**);
 
 int main()
 {
-    char num_string[]="76";
-	bool is_int = true;
-	int convert_int;
-	char convert_char;
+    char str[]="My name is Brandon";
+	char *Dup_str;
+    Dup_str_func(str, &Dup_str);
 
-    /*Int and char could both catch the integer, but the char has small range, 0~255 */
-	convert_int = atoi(&num_string);//the argument needs to be pointer 
-	convert_char = atoi(&num_string);
-	printf("int save %d, sizeof = %ld\n", convert_int, sizeof(convert_int));
-    printf("char save %d, sizeof = %ld\n", convert_char, sizeof(convert_char));
-
-    /*Bool could also save int, but it only save 0 or 1*/
-	printf("True is the integer: %d, sizeof = %ld\n",is_int,sizeof(is_int));
+    printf("origin string: %s\n",str);
+    printf("dup string: %s\n",Dup_str);
 
     return 0;
 }
 
+void Dup_str_func(char orin[], char **dup)
+{
+    int i;
+    printf("%p\n",dup);
+    (*dup) = malloc(strlen(orin));
+    printf("%p\n",dup);
+    for(i=0;orin[i]!='\0';i++)
+    {        
+         (*dup)[i] = orin[i];
+    }
+}
