@@ -1,12 +1,15 @@
-#include "name_print.h"
+#include <stdio.h>
+#include "print.h"
+#define SIZE 10
+#define SYMBOL '#'
 
 int main()
 {
-    name_print(my_name);
+    int size;
+    char symbol;
+    scanf("%d %c",&size,&symbol);
+    print_triangle(size, symbol);
     return 0;
 }
 
-/*void name_print(char* name)
-{
-    printf("%s\n",name);
-}*/
+
