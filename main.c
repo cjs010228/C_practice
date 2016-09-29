@@ -7,7 +7,7 @@
 
 int main()
 {
-    int *array=malloc(NUM);
+    int *array=malloc(sizeof(int)*NUM);
     int i;
 
     srand((unsigned)time(NULL));
@@ -15,7 +15,7 @@ int main()
     {
         *(array+i)=rand()%100;
     }
-    
+  
     //int test[10]={92,93,90,69,91,43,5,73,47,94};
     //array=test;
 
