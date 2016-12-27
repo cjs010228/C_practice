@@ -2,11 +2,33 @@
 #include <stdlib.h>
 #include <time.h>
 #include "sort.h"
+#include "sortLinklist.h"
 #define NUM 30
 #define SORT_TYPE 1
 
 int main()
 {
+    srand((unsigned)time(NULL));
+    int cnt;
+    NODE_T *head;
+    head = malloc(sizeof(NODE_T));
+    head->nextNode = NULL;
+    head->lastNode = NULL;
+    head->value = 0;
+    
+    for(cnt = 0; cnt < 10; cnt++);
+    {
+        NODE_T *newMem;
+        newMem = malloc(sizeof(NODE_T));
+        newMem->nextNode = NULL;
+        newMem->lastNode = NULL;
+        newMem->value = rand()%100;
+        LinkListSort(head, newMem);
+        TraverseListlist(head);
+    }
+    TraverseListlist(head);
+
+#if 0    
     int *array=malloc(sizeof(int)*NUM);
     int i;
 
@@ -38,5 +60,6 @@ int main()
         printf("\n");   
 
     return 0;
+#endif    
 }
 

@@ -1,6 +1,8 @@
-
+#include <stdio.h>
+#include "sortLinklist.h"
 
 static void JumpTheList(NODE_T *backMem, NODE_T *newMem); 
+void TraverseListlist(NODE_T *head);
 
 void LinkListSort(NODE_T *head, NODE_T *newMem)
 {
@@ -24,6 +26,19 @@ void LinkListSort(NODE_T *head, NODE_T *newMem)
 
         curNode = curNode->nextNode;
     }
+}
+
+void TraverseListlist(NODE_T *head)
+{
+    NODE_T *curNode;
+    
+    curNode = head->nextNode;
+    while(curNode != NULL)
+    {
+        printf("%d\n", curNode->value);
+        curNode = curNode->nextNode;
+    }
+
 }
 
 static void JumpTheList(NODE_T *backMem, NODE_T *newMem)
