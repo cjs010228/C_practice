@@ -78,4 +78,3 @@ void SelectionSort(int *array, int num)
         swap(*(array+ist_pos),*(array+(cand)));
     }
 }
-

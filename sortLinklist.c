@@ -2,33 +2,44 @@
 #include "sortLinklist.h"
 
 static void JumpTheList(NODE_T *backMem, NODE_T *newMem); 
-void TraverseListlist(NODE_T *head);
 
 void LinkListSort(NODE_T *head, NODE_T *newMem)
 {
     NODE_T *curNode;
+    NODE_T *oldCurNode;
+    oldCurNode = head;
     curNode = head->nextNode;
+
     while(1)
     {
         if (curNode == NULL)
         {
-            newMem->lastNode = curNode->lastNode;
+            if (oldCurNode == head)
+            {
+                newMem->lastNode = head;
+                newMem->nextNode = NULL;
+                head->nextNode = newMem;
+                break;
+            }
+
+            newMem->lastNode = oldCurNode;
             newMem->nextNode = NULL;
-            curNode->nextNode = newMem;
+            oldCurNode->nextNode = newMem;
             break;
         }
 
-        if (curNode->value < newMem->value)
+        if (newMem->value >= curNode->value)
         {
             JumpTheList(curNode, newMem);
             break;
         }
 
+        oldCurNode = curNode;
         curNode = curNode->nextNode;
     }
 }
 
-void TraverseListlist(NODE_T *head)
+void TraverseLinklist(NODE_T *head)
 {
     NODE_T *curNode;
     
@@ -45,5 +56,6 @@ static void JumpTheList(NODE_T *backMem, NODE_T *newMem)
 {
     newMem->lastNode = backMem->lastNode;
     newMem->nextNode = backMem;
+    backMem->lastNode->nextNode = newMem;
     backMem->lastNode = newMem;
 }

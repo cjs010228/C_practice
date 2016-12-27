@@ -5,4 +5,4 @@ typedef struct NODE_S{
 }NODE_T;
 
 void LinkListSort(NODE_T *head, NODE_T *newMem);
-void TraverseListlist(NODE_T *head);
+void TraverseLinklist(NODE_T *head);

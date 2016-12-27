@@ -16,17 +16,19 @@ int main()
     head->lastNode = NULL;
     head->value = 0;
     
-    for(cnt = 0; cnt < 10; cnt++);
+    for(cnt = 0; cnt < 10; cnt++)
     {
         NODE_T *newMem;
         newMem = malloc(sizeof(NODE_T));
         newMem->nextNode = NULL;
         newMem->lastNode = NULL;
         newMem->value = rand()%100;
+        printf("new mem %d\n",newMem->value);
+        
+
         LinkListSort(head, newMem);
-        TraverseListlist(head);
     }
-    TraverseListlist(head);
+    TraverseLinklist(head);
 
 #if 0    
     int *array=malloc(sizeof(int)*NUM);
