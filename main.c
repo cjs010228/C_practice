@@ -1,16 +1,51 @@
-#include "name_print.h"
-#include "mem_set.h"
+#include <stdio.h> 
 
-int main()
+int main(int argc, char* argv[]) 
 {
-	int num = 0x4D;
-	mem_set(&num, 42, sizeof(num));
-	printf("num = %d\n length = %lu\n",num,sizeof(num));
-    //name_print(my_name);
-    return 0;
-}
+    long int size;
+    unsigned char ch; 
+    int count = 0; 
+    unsigned char checkSum = 0;
 
-/*void name_print(char* name)
-{
-    printf("%s\n",name);
-}*/
+    if(argc != 2) 
+    { 
+        puts("Command: read <filename>"); 
+        return 1; 
+    } 
+
+    FILE *file = fopen(argv[1], "rb");
+    if(!file) 
+    { 
+        puts("Failed to read"); 
+        return 1; 
+    } 
+
+    /* Count the file size */
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    
+
+    /* Print bin file in Hex type */
+    while(!feof(file)) 
+    { 
+        fread(&ch, sizeof(char), 1, file);
+
+        checkSum ^= ch;
+        printf("%02x ", ch);
+        count++; 
+        if(count > 16) {  
+            putchar('\n');
+            count = 0; 
+        } 
+    } 
+    putchar('\n');
+
+    printf("The file size is %d\n",size);
+    printf("checksum = %x\n",checkSum);
+
+    fclose(file);
+
+    return 0; 
+} 
+
