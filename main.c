@@ -3,11 +3,12 @@
 #include <time.h>
 #include "sort.h"
 #include "sortLinklist.h"
-#define NUM 30
-#define SORT_TYPE 1
+#define NUM 10
+#define SORT_TYPE 2
 
 int main()
 {
+#if 0    
     srand((unsigned)time(NULL));
     int cnt;
     NODE_T *head;
@@ -29,8 +30,8 @@ int main()
         LinkListSort(head, newMem);
     }
     TraverseLinklist(head);
-
-#if 0    
+#endif
+#if 1    
     int *array=malloc(sizeof(int)*NUM);
     int i;
 
@@ -50,10 +51,13 @@ int main()
     {
         case 1:
             BubbleSort(array, NUM);
+            break;
         case 2:
             InsertionSort(array, NUM);
+            break;
         case 3:
             SelectionSort(array, NUM);
+            break;
         default:
             BubbleSort(array, NUM);
     }
