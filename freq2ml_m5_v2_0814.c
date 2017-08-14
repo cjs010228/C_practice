@@ -9,8 +9,14 @@
 #define int8_t int
 
 #define Sound_Over_Level        (200)
-#define Sample_Num              500
-#define FILE_NAME    "100ml.txt"
+#define Sample_Num              501
+#define FILE_NAME               "water_data.txt"
+
+typedef struct
+{
+    uint16_t freq;
+    uint16_t level;
+}VALID_FREQ;
 
 int16_t water_data[Sample_Num] = {0}; 
 
@@ -22,7 +28,7 @@ uint8_t check_freq_index;
 int8_t check_freq_offset;
 
 uint8_t valid_freq_amount;
-uint16_t valid_freq[20];
+//uint16_t valid_freq[20];
 uint8_t last_valid_freq;
 uint8_t check_freq_flag;
 uint8_t valid_type;
@@ -31,6 +37,7 @@ uint8_t last_valid_index2;
 
 int water_ml_global;
 
+VALID_FREQ valid_freq[30];
 int16_t water_data[Sample_Num];
 const char crlf[2] = {0x0D, 0x0A};
 
@@ -67,7 +74,7 @@ void getSampleData(int16_t *data)
 		else
 		    data[num++] = atoi(s);
     }
-#if 0 	
+#if 1 	
     for(i = 0; i < num; i++)
 	    printf("%d\n", data[i]);
 #endif		
@@ -85,7 +92,7 @@ uint16_t calc_vaild_freq()
     uint16_t max_level_freq;
     int i, j;
 
-    for(i= 0; i < 500; i++)
+    for(i= 0; i < 501; i++)
     {
         if( meet_point == 0 )
         {
@@ -141,15 +148,19 @@ uint16_t calc_vaild_freq()
 
                     if( max_level > 900 )
                     {
-                        while(water_data[max_level_freq - ++index1] > 900)
+                        while(water_data[max_level_freq - index1] > 900)
                         {
                             if( max_level_freq - index1 <= 6 ) break;
+
+                            ++index1;
                         }
                         index1--;
 
-                        while(water_data[max_level_freq + ++index2] > 900)
+                        while(water_data[max_level_freq + index2] > 900)
                         {
                             if( max_level_freq + index2 >= Sample_Num - 6 ) break;
+
+                            ++index2;
                         }
                         index2--;
                     }
@@ -158,16 +169,18 @@ uint16_t calc_vaild_freq()
                     {
                         for(j=1 ; j< 6; j++)
                         {
-                            if( water_data[max_level_freq - index1 - j] < water_data[max_level_freq - index1] / 2 ||
-                                water_data[max_level_freq + index2 + j] < water_data[max_level_freq + index2] / 2 )
+                            if( water_data[max_level_freq - index1 - j] < water_data[max_level_freq - index1] * 6 / 10 ||
+                                water_data[max_level_freq + index2 + j] < water_data[max_level_freq + index2] * 6 / 10 )
                             {
                                 if( full_flag == 0 )
                                 {
-                                    valid_freq[valid_freq_amount] = max_level_freq;
+                                    valid_freq[valid_freq_amount].freq = max_level_freq;
+                                    valid_freq[valid_freq_amount].level = max_level;
                                 }
                                 else
                                 {
-                                    valid_freq[valid_freq_amount] = (first_full_freq + last_full_freq)/2;
+                                    valid_freq[valid_freq_amount].freq = first_full_freq; // + (last_full_freq - first_full_freq)/4;
+                                    valid_freq[valid_freq_amount].level = 1023;
                                 }
 
                                 valid_freq_amount++;
@@ -191,42 +204,34 @@ uint8_t check_harmonic()
 
     for( i=last_valid_index1; i < valid_freq_amount - 1; i++ )
     {
-        min_level[0] = valid_freq[i] * 17;
+        min_level[0] = valid_freq[i].freq * 17;
         
-        if( valid_freq[i] < 2200)
+        if( valid_freq[i].freq < 2200)
         {
-            max_level[0] = valid_freq[i] * 19;
+            max_level[0] = valid_freq[i].freq * 19;
         }
         else
         {
-            max_level[0] = valid_freq[i] * 21;
+            max_level[0] = valid_freq[i].freq * 21;
         }
 
-        if( valid_freq[i] < 2200)
-        {
-            max_level[1] = valid_freq[i] * 27;
-            min_level[1] = valid_freq[i] * 25;
-        }
-        else
-        {
-            max_level[1] = valid_freq[i] * 28;
-            min_level[1] = valid_freq[i] * 26;
-        }
+        max_level[1] = valid_freq[i].freq * 27;
+        min_level[1] = valid_freq[i].freq * 25;
         
-        min_level[2] = valid_freq[i] * 14;
-        max_level[2] = valid_freq[i] * 16;
+        max_level[2] = valid_freq[i].freq * 14;
+        min_level[2] = valid_freq[i].freq * 16;
 
         for( j = last_valid_index2; j < valid_freq_amount; j++ )
         {
             for( k=0; k<3; k++)
             {
-                if( valid_freq[j] * 10 < max_level[k] && valid_freq[j] * 10 > min_level[k] )
+                if( valid_freq[j].freq * 10 < max_level[k] && valid_freq[j].freq * 10 > min_level[k] )
                 {
-                    if( k != 2 || ( valid_freq[i] > 2000 && valid_freq[i] < 3600))
+                    if( k != 2 || ( valid_freq[i].freq > 2000))
                     {
                         check_freq_amount = 2;
-                        check_freq[0] = valid_freq[i];
-                        check_freq[1] = valid_freq[j];
+                        check_freq[0] = i; //valid_freq[i].freq;
+                        check_freq[1] = j; //valid_freq[j].freq;
                         last_valid_index1 = i;
                         last_valid_index2 = j + 1;
                         return k;
@@ -247,20 +252,19 @@ void calc_water_ml()
     uint16_t i;
     uint8_t result;
     static uint32_t meet_freq;
-    
-    //Brandon
-    uint32_t freq_index_for_ML[47]=
+
+    uint32_t freq_index_for_ML[49]=
     {
-        1170, 1190, 1205, 1230, 1260, 
-        1290, 1310, 1340, 1360, 1400, 
-        1430, 1460, 1490, 1520, 1540, 
-        1590, 1610, 1650, 1690, 1720, 
-        1750, 1810, 1840, 1880, 1930, 
-        1980, 2020, 2070, 2110, 2170, 
-        2210, 2280, 2325, 2400, 2450, 
-        2540, 2640, 2730, 2820, 2970, 
-        3150, 3310, 3550, 3880, 4310, 
-        5040, 5730
+        1170, 1190, 1210, 1230, 1250, 
+        1270, 1290, 1310, 1340, 1360, 
+        1390, 1420, 1450, 1480, 1510, 
+        1540, 1570, 1610, 1650, 1690, 
+        1730, 1770, 1810, 1860, 1910, 
+        1960, 2010, 2060, 2120, 2170, 
+        2230, 2300, 2360, 2430, 2500, 
+        2580, 2670, 2760, 2860, 2970, 
+        3100, 3230, 3390, 3570, 3820, 
+        4110, 4490, 5090, 5980
     };
 
     //s_calc_water_tid = 0; //Brandon
@@ -282,15 +286,15 @@ void calc_water_ml()
                 
                 //meet_freq = meet_freq * 57045 /(54600 + 100 * SysInfo.show_temp); //Brandon
     
-                if( meet_freq >= freq_index_for_ML[46] )
+                if( meet_freq >= freq_index_for_ML[48] )
                 {
-                    water_ml = 470;
+                    water_ml = 480;
                     //printf("1 %d\n", water_ml);
                     water_ml_global = water_ml;
                 }
                 else
                 {
-                    for( i=0; i< 47; i++)
+                    for( i=0; i< 49; i++)
                     {
                         if( meet_freq < freq_index_for_ML[i] )
                         {
@@ -363,11 +367,11 @@ void calc_water_ml()
             }
             else if( result == 2)
             {
-                meet_freq  = valid_freq[last_valid_index1] * 10 / 18;
+                meet_freq  = valid_freq[last_valid_index1].freq * 10 / 18;
             }
             else
             {
-                meet_freq  = valid_freq[last_valid_index1];
+                meet_freq  = valid_freq[last_valid_index1].freq;
             }
         }
 
@@ -375,12 +379,12 @@ void calc_water_ml()
         {
             for( i=last_valid_index1; i < valid_freq_amount; i++ )
             {
-                if( valid_freq[i] > 2000 )
+                if( valid_freq[i].freq > 2800 )
                 {
-                    meet_freq  = valid_freq[i];
+                    meet_freq  = valid_freq[i].freq;
                     last_valid_index1 = i+1;
                     check_freq_amount = 1;
-                    check_freq[0] = valid_freq[i];
+                    check_freq[0] = i; //valid_freq[i].freq;
                     break;
                 }
             }
@@ -425,8 +429,8 @@ int freq2WaterML()//
 
     for( i=0; i < valid_freq_amount; i++ )
     {
-        valid_freq[i] = 1000 + valid_freq[i] * 10;
-        printf("harmonic[%d] = %d, %f\n",i , valid_freq[i], ((float)valid_freq[i]/(float)valid_freq[0]));
+        valid_freq[i].freq = 1000 + valid_freq[i].freq * 10;
+        printf("harmonic[%d] = %d, %f\n",i , valid_freq[i].freq, ((float)valid_freq[i].freq/(float)valid_freq[0].freq));
     }
  //Brandon
     if( valid_freq_amount == 0 )
