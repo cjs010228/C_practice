@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define DEBUG 0
+#define DEBUG 1
 #define FILE_NAME               "water_data.txt"
 #define SOUND_OVER_LEVEL        200
 #define SAMPLE_NUM              501
@@ -116,6 +116,7 @@ void calc_valid_freq(int16_t *raw_data, VALID_FREQ *valid_freq, int8_t *valid_fr
         {
             if( raw_data[i] > SOUND_OVER_LEVEL )
             {
+            	//printf("%d %d\n", i, raw_data[i]);
                 meet_point = 1;
                 first_meet_freq = i;
                 //last_meet_freq = i;
@@ -132,15 +133,16 @@ void calc_valid_freq(int16_t *raw_data, VALID_FREQ *valid_freq, int8_t *valid_fr
             {
                 if( full_flag == 0 )
                 {
-                    if(raw_data[i] == 1023)
-                    {
-                        full_flag = 1;
-                        first_full_freq = i;
-                    }
-                    else if(raw_data[i] > max_level)
+                    if(raw_data[i] > max_level)
                     {
                         max_level = raw_data[i];
                         max_level_freq = i;
+
+	                    if(raw_data[i] == 1023)
+	                    {
+	                        full_flag = 1;
+	                        first_full_freq = i;
+	                    }
                     }
                 }
                 else if( full_flag == 1)
@@ -160,9 +162,16 @@ void calc_valid_freq(int16_t *raw_data, VALID_FREQ *valid_freq, int8_t *valid_fr
 
                 meet_point = 0;
 
-                if( (i - first_meet_freq) > 2 )
+                if( last_full_freq - first_full_freq > 3 )
                 {
-                    uint8_t index1= 0, index2=0;
+                    valid_freq[*valid_freq_amount].freq = first_full_freq + (last_full_freq - first_full_freq)/2;
+                    valid_freq[*valid_freq_amount].level = max_level;
+                    
+                    (*valid_freq_amount)++;
+                }
+                else if( (i - first_meet_freq) > 2 )
+                {
+                    uint8_t index1= 1, index2=1;
 
                     if( max_level > 900 )
                     {
@@ -187,20 +196,20 @@ void calc_valid_freq(int16_t *raw_data, VALID_FREQ *valid_freq, int8_t *valid_fr
                     {
                         for(j=1 ; j< 6; j++)
                         {
-                            if( raw_data[max_level_freq - index1 - j] < raw_data[max_level_freq - index1] * 6 / 10 ||
-                                raw_data[max_level_freq + index2 + j] < raw_data[max_level_freq + index2] * 6 / 10 )
+                            if( raw_data[max_level_freq - index1 - j] < raw_data[max_level_freq - index1] / 2 ||
+                                raw_data[max_level_freq + index2 + j] < raw_data[max_level_freq + index2] / 2 )
                             {
                                 if( full_flag == 0 )
                                 {
                                     valid_freq[*valid_freq_amount].freq = max_level_freq;
-                                    valid_freq[*valid_freq_amount].level = max_level;
+                                    //valid_freq[*valid_freq_amount].level = max_level;
                                 }
                                 else
                                 {
                                     valid_freq[*valid_freq_amount].freq = first_full_freq; // + (last_full_freq - first_full_freq)/4;
-                                    valid_freq[*valid_freq_amount].level = 1023;
+                                    //valid_freq[*valid_freq_amount].level = 1023;
                                 }
-
+                                valid_freq[*valid_freq_amount].level = max_level;
                                 (*valid_freq_amount)++;
 
                                 break;
@@ -221,7 +230,7 @@ int8_t check_harmonic(VALID_FREQ *valid_freq, int8_t valid_freq_amount, int8_t *
     {
         min_level[0] = valid_freq[i].freq * 17;
         
-        if( valid_freq[i].freq < 2200)
+        if( valid_freq[i].freq < 2000)
         {
             max_level[0] = valid_freq[i].freq * 19;
         }
@@ -367,7 +376,7 @@ int16_t map_freq2ml(int16_t freq)
                 }
                 else
                 {
-                    water_ml = (i-1) * 10 + (freq_index_for_ML[i] - freq ) * 10 / 
+                    water_ml = (i-1) * 10 + ( freq - freq_index_for_ML[i-1] ) * 10 / 
                                (freq_index_for_ML[i] - freq_index_for_ML[i-1]); 
                 }
 
